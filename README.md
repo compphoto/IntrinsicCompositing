@@ -1,2 +1,67 @@
-# IntrinsicCompositing
-Code for the SIGGRAPH Asia 2023 paper "Intrinsic Harmonization for Illumination-Aware Compositing"
+# Intrinsic Harmonization for Illumination-Aware Compositing
+Code for the paper: Intrinsic Harmonization for Illumination-Aware Compositing, [Chris Careaga](https://ccareaga.github.io), [S. Mahdi H. Miangoleh](https://miangoleh.github.io) [Yağız Aksoy](https://yaksoy.github.io), Proc. SIGGRAPH Asia, 2023 
+### [Project Page](https://yaksoy.github.io/intrinsicCompositing) | [Paper](https://yaksoy.github.io/papers/SigAsia23-IntrinsicCompositing.pdf) | [Video](https://www.youtube.com/watch?v=M9hCUTp8bo4) | [Supplementary](https://yaksoy.github.io/papers/SigAsia23-IntrinsicCompositing-Supp.pdf)
+
+We propose an illumination-aware image harmonization approach for in-the-wild imagery. Our method is formulated in the intrinsic image domain. We use off-the-shelf networks to generate albedo, shading and surface normals for the input composite and background image. We first harmonize the albedo of the background and foreground by predicting image editing parameters. Using normals and shading we estimate a simple lighting model for the background illumination. With this lighting model, we render Lambertian shading for the foreground and refine it using a network trained on segmentation datasets via self-supervision. When compared to prior works we are the only method that is capable of modeling realistic lighting effects.
+
+[![YouTube Video](./figures/thumbnail.jpg)](https://www.youtube.com/watch?v=M9hCUTp8bo4)
+
+
+
+
+## Method
+
+
+
+## Setup
+Depending on how you would like to use the code in this repository there are two options to setup the code.
+In either case, you should first create a fresh virtual environment (`python3 -m venv intrinsic_env`) and start it (`source intrinsic_env/bin/activate`)
+
+You can install this repository as a package using `pip`:
+```
+git clone https://github.com/compphoto/IntrinsicCompositing
+cd IntrinsicCompositing
+pip install .
+```
+If you want to make changes to the code and have it reflected when you import the package use `pip install --editable`
+Or perform the same action without cloning the code using:
+```
+pip install https://github.com/compphoto/IntrinsicCompositing/archive/main.zip
+```
+This will allow you to import the repository as a Python package, and use our pipeline as part of your codebase.
+
+## Inference
+
+The best way to run our pipeline is by using our interactive interface. We provide some example backgrounds and foregrounds in `interface/examples`:
+
+```
+$ cd interface
+$ python interface.py --bg examples/bgs/lamp.jpeg --fg examples/fgs/soap.png --mask examples/masks/soap.png
+```
+The first time you run the interface multiple pretrained checkpoints will be downloaded (the method makes use of multiple off-the-shelf models) which may take some time. Subsequent runs will use the cached weights, but there is still a bit of preprocessing that is required when the interface is started. Once the preprocessing is done the interface window will appear and the input composite can be edited. After editing the composite, harmonizing only requires running our albedo and shading networks which should only take a second or two. These are the keybinds for the interface:
+
+| Key | Action |
+|--|--|
+| r | run the harmonization of the current composite |
+| s | save inputs, outputs and intermediate images |
+|1-5 | view various intermediate representations (shading, normals, etc) |
+|scroll up/down | scale foreground region up or down |
+
+The interface has been tested on an RTX2060 with 8 gb of VRAM which should be able to handle inference at a 1024 pixel resolution. 
+
+## Citation
+
+```
+@INPROCEEDINGS{careagaCompositing,  
+	author={Chris Careaga and S. Mahdi H. Miangoleh and Ya\u{g}{\i}z Aksoy},  
+	title={Intrinsic Harmonization for Illumination-Aware Compositing},  
+	booktitle={Proc. SIGGRAPH Asia},  
+	year={2023},  
+}
+```
+
+## License
+
+This implementation is provided for academic use only. Please cite our paper if you use this code or any of the models. 
+
+The methodology presented in this work is safeguarded under intellectual property protection. For inquiries regarding licensing opportunities, kindly reach out to SFU Technology Licensing Office &#60;tlo_dir <i>ατ</i> sfu <i>δøτ</i> ca&#62; and Dr. Yağız Aksoy &#60;yagiz <i>ατ</i> sfu <i>δøτ</i> ca&#62;.
