@@ -9,7 +9,7 @@ from argparse import Namespace
 
 from chrislib.general import np_to_pil
 
-from intrinsic_composite.albedo.model.editingnetwork_trainer import EditingNetworkTrainer
+from intrinsic_compositing.albedo.model.editingnetwork_trainer import EditingNetworkTrainer
 
 PAPER_WEIGHTS_URL = 'https://github.com/compphoto/IntrinsicCompositing/releases/download/1.0.0/albedo_paper_weights.pth'
 CACHE_PATH = torch.hub.get_dir()
