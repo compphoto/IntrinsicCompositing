@@ -136,11 +136,8 @@ def composite_depth(img, loc, fg, mask):
 
 # DISP_SCALE = 0.5
 DISP_SCALE = 1.0
-MAX_BG_SZ = 960
+MAX_BG_SZ = 1024
 LGT_VIZ_SZ = 144
-
-# RESHADING_WEIGHTS = '/home/chris/research/intrinsic/data/weights/inpaint_weights/paper_weights.pt'
-RESHADING_WEIGHTS = '/home/chris/research/intrinsic/data/weights/inpaint_weights/elegant_cruiser_191_3840.pt'
 
 class App(tk.Tk):
     def __init__(self, args):
@@ -177,18 +174,13 @@ class App(tk.Tk):
         self.nrm_model = load_omni_model()
 
         print('loading intrinsic decomposition model')
-        self.int_model = load_models(
-            '/home/chris/research/intrinsic/data/weights/final_weights/vivid_bird_318_300.pt',
-            '/home/chris/research/intrinsic/data/weights/final_weights/fluent_eon_138_200.pt'
-        )
+        self.int_model = load_models('paper_weights')
 
         print('loading albedo model')
         self.alb_model = load_albedo_harmonizer()
 
         print('loading reshading model')
-        self.shd_model = load_reshading_model(
-            weights_path=RESHADING_WEIGHTS
-        )
+        self.shd_model = load_reshading_model(paper_weights)
         
         self.init_scene()
 
@@ -286,12 +278,19 @@ class App(tk.Tk):
 
     
     def update_bias(self, val):
+        # update the ambient light strength from slider value
         self.coeffs[-1] = float(val)
         self.update_light()
 
     def update_dir(self, val):
+        # update the directional light source strength
+        
+        # normalize the currect light source direction
         vec = self.coeffs[:3]
         vec /= np.linalg.norm(vec).clip(1e-3)
+        
+        # scale the unit length light direction by the slider value
+        # then update the stored coeffs and UI accordingly
         vec *= float(val)
         self.coeffs[:3] = vec
         self.update_light()
@@ -299,10 +298,11 @@ class App(tk.Tk):
     def init_scene(self):
         bg_h, bg_w, _ = self.bg_img.shape
         
-        # resize the background image to be large side < 1024
+        # resize the background image to be large side < some max value
         max_dim = max(bg_h, bg_w)
         scale = MAX_BG_SZ / max_dim
-
+        
+        # here is our bg image and size after resizing to max size
         self.bg_img = resize(self.bg_img, (int(bg_h * scale), int(bg_w * scale)))
         self.bg_h, self.bg_w, _ = self.bg_img.shape
         
@@ -320,12 +320,14 @@ class App(tk.Tk):
         self.bg_shd = result['inv_shading'][:, :, None]
         self.bg_alb = result['albedo']
         
+        # to ensure that normals are globally accurate we compute them at
+        # a resolution of 512 pixels, so resize our shading and image to compute 
+        # rescaled normals, then run the lighting model optimization
         max_dim = max(self.bg_h, self.bg_w)
         scale = 512 / max_dim
         small_bg_img = rescale(self.bg_img, scale)
         small_bg_nrm = get_omni_normals(self.nrm_model, small_bg_img)
         small_bg_shd = rescale(self.bg_shd, scale)
-        small_bg_img = rescale(self.bg_img, scale)
 
         self.orig_coeffs, self.lgt_vis = get_light_coeffs(
             small_bg_shd[:, :, 0], 
@@ -367,13 +369,16 @@ class App(tk.Tk):
         self.msk_crop = rescale(self.orig_msk_crop, self.frag_scale)
 
         self.bb_h, self.bb_w, _ = self.fg_crop.shape
-
+        
+        # set the composite region to center of bg img
         self.loc_y = self.bg_h // 2
         self.loc_x = self.bg_w // 2
-
+        
+        # get top and left using location, and bounding box size
         top = self.loc_y - (self.bb_h // 2)
         left = self.loc_x - (self.bb_w // 2)
-
+        
+        # create the composite image using helper function and location
         init_cmp = composite_crop(
             self.bg_img, 
             (top, left),
@@ -385,7 +390,8 @@ class App(tk.Tk):
         # cropped and scaled to 1024 in order to get the most details, 
         # then we resize it to match the fragment size
         self.orig_fg_nrm = get_omni_normals(self.nrm_model, self.orig_fg_crop)
-
+        
+        # run the intrinsic pipeline to get foreground albedo and shading
         result = run_pipeline(
             self.int_model,
             self.orig_fg_crop ** 2.2,
@@ -397,24 +403,28 @@ class App(tk.Tk):
         self.orig_fg_shd = result['inv_shading'][:, :, None]
         self.orig_fg_alb = result['albedo']
         
+        # to try to save memory I remove refs and empty cuda cache (might not even do anything)
         del self.nrm_model
         del self.int_model
         torch.cuda.empty_cache()
-
+        
+        # run depth model on bg and fg seperately
         self.bg_dpt = get_depth(self.bg_img, self.dpt_model)[:, :, None]
         self.orig_fg_dpt = get_depth(self.orig_fg_crop, self.dpt_model)[:, :, None]
         del self.dpt_model
-
-
+        
+        # these are the versions of the bg, fg and msk that we use in the UI
         self.disp_bg_img = rescale(self.bg_img, DISP_SCALE)
         self.disp_fg_crop = rescale(self.fg_crop, DISP_SCALE)
         self.disp_msk_crop = rescale(self.msk_crop, DISP_SCALE)
-        
+       
+        # initialize right side as initial composite, and left is just zeros
         self.l_img = init_cmp
         self.r_img = np.zeros_like(init_cmp)
 
     def scrolled(self, e):
-
+        
+        # if we scroll we want to scale the foreground fragment up or down
         if e.num == 5 and self.frag_scale > 0.05: # scroll down
             self.frag_scale -= 0.01
         if e.num == 4 and self.frag_scale < 1.0: # scroll up
@@ -441,17 +451,21 @@ class App(tk.Tk):
         self.update_left()
             
     def clicked(self, e):
+        
         x, y = e.x, e.y
         radius = (LGT_VIZ_SZ // 2)
 
         if e.widget == self.lgt_label:
+            # if the user clicked the light ball, compute the direction from mouse pos
             rel_x = (x - radius) / radius
             rel_y = (y - radius) / radius
             
             z = np.sqrt(1 - rel_x ** 2 - rel_y ** 2)
             
-            print('clicked the lighting viz:', rel_x, rel_y, z)
+            # print('clicked the lighting viz:', rel_x, rel_y, z)
             
+            # after converting the mouse pos to a normal direction on a unit sphere
+            # we can create our 4D lighting coefficients using the slider values
             self.coeffs = np.array([0, 0, 0, float(self.bias_scale.get())])
             dir_vec = np.array([rel_x, -rel_y, z]) * float(self.dir_scale.get())
             self.coeffs[:3] = dir_vec
@@ -493,7 +507,8 @@ class App(tk.Tk):
 
             top = self.loc_y - (self.fg_crop.shape[0] // 2)
             left = self.loc_x - (self.fg_crop.shape[1] // 2)
-
+            
+            # create all the composite images to send to the pipeline
             self.comp_img = composite_crop(
                 self.bg_img, 
                 (top, left),
@@ -540,6 +555,8 @@ class App(tk.Tk):
             self.orig_alb = (self.comp_img ** 2.2) / uninvert(self.comp_shd)
             harm_img = self.alb_harm * uninvert(self.comp_shd)
             
+            # run the reshading model using the various composited components,
+            # and our lighting coefficients from the user interface
             self.result = compute_reshading(
                 harm_img,
                 self.comp_msk,
