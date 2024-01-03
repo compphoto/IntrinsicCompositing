@@ -4,14 +4,35 @@ Code for the paper: Intrinsic Harmonization for Illumination-Aware Compositing, 
 
 We propose an illumination-aware image harmonization approach for in-the-wild imagery. Our method is formulated in the intrinsic image domain. We use off-the-shelf networks to generate albedo, shading and surface normals for the input composite and background image. We first harmonize the albedo of the background and foreground by predicting image editing parameters. Using normals and shading we estimate a simple lighting model for the background illumination. With this lighting model, we render Lambertian shading for the foreground and refine it using a network trained on segmentation datasets via self-supervision. When compared to prior works we are the only method that is capable of modeling realistic lighting effects.
 
-[![YouTube Video](./figures/thumbnail.jpg)](https://www.youtube.com/watch?v=M9hCUTp8bo4)
-
-
+[![YouTube Video](./figures/IntrinsicCompositingVideo.jpg)](https://www.youtube.com/watch?v=M9hCUTp8bo4)
 
 
 ## Method
+Compositing is a crucial image editing task requiring realistic integration of objects into new backgrounds. 
+Achieving a natural composition requires adjusting the appearance of the inserted object through a process called image harmonization. 
+While existing literature addresses color harmonization, relighting, an equally vital aspect, is often overlooked due to the challenges in realistically adjusting object illumination in diverse environments.
 
+![](./figures/teaser_comparison.jpg)
 
+In this project, we tackle image harmonization in the intrinsic domain, decomposing images into reflectance (albedo) and illumination (shading). 
+We employ a two-step approach: first, harmonizing color in the albedo space, and then addressing the challenging relighting problem in the shading domain. 
+Our goal is to generate realistic shading for the composited object, reflecting the new illumination environment. 
+
+![](./figures/teaser_pipeline.jpg)
+
+More specifically, we initially render an initial shading using the Lambertian model and surface normals for the background and inserted object. 
+A re-shading network then refines this shading for the composited object in a self-supervised manner.
+Our method is able to generate novel reshadings of the foreground region that reflect the illumination conditions of the background scene.
+
+![](./figures/teaser2.jpg)
+
+Our method outperforms prior works, producing realistic composite images that not only match color but also exhibit realistic illumination in diverse scenarios.
+
+![](./figures/user_study_comp.jpg)
+
+Our re-shading network learns to predict spatially-varying lighting effects in-context due to our self-supervised training approach
+
+![](./figures/astronauts.png)
 
 ## Setup
 Depending on how you would like to use the code in this repository there are two options to setup the code.
