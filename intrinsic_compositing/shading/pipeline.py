@@ -12,7 +12,9 @@ from altered_midas.midas_net import MidasNet
 def load_reshading_model(path, device='cuda'):
     
     if path == 'paper_weights':
-        state_dict = torch.hub.load_state_dict_from_url('', map_location=device, progress=True)
+        state_dict = torch.hub.load_state_dict_from_url('https://github.com/compphoto/IntrinsicCompositing/releases/download/1.0.0/shading_paper_weights.pt', map_location=device, progress=True)
+    if path == 'further_trained'
+        state_dict = torch.hub.load_state_dict_from_url('https://github.com/compphoto/IntrinsicCompositing/releases/download/1.0.0/further_trained.pt', map_location=device, progress=True)
     else:
         state_dict = torch.load(path) 
 
