@@ -156,7 +156,7 @@ def load_albedo_harmonizer():
     # args.checkpoint_load_path = f'{cur_path}/checkpoints/168000_net_Parameters.pth'
     
     if not os.path.exists(args.checkpoint_load_path):
-        os.mkdir(f'{CACHE_PATH}/albedo_harmonization', exists_ok=True)
+        os.mkdir(f'{CACHE_PATH}/albedo_harmonization', exist_ok=True)
         os.system(f'wget {PAPER_WEIGHTS_URL} -P {CACHE_PATH}/albedo_harmonization')
 
     trainer = EditingNetworkTrainer(args)
