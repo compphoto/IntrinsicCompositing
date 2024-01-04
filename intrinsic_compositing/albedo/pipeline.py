@@ -152,7 +152,7 @@ def load_albedo_harmonizer():
     args.lr_editnet = 0.00001
     args.batch_size = 1
 
-    args.checkpoint_load_path = f'{CACHE_PATH}/albedo_harmonization/168000_net_Parameters.pth'
+    args.checkpoint_load_path = f'{CACHE_PATH}/albedo_harmonization/albedo_paper_weights.pth'
     # args.checkpoint_load_path = f'{cur_path}/checkpoints/168000_net_Parameters.pth'
     
     if not os.path.exists(args.checkpoint_load_path):
