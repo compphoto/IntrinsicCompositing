@@ -180,7 +180,7 @@ class App(tk.Tk):
         self.alb_model = load_albedo_harmonizer()
 
         print('loading reshading model')
-        self.shd_model = load_reshading_model(paper_weights)
+        self.shd_model = load_reshading_model('paper_weights')
         
         self.init_scene()
 
