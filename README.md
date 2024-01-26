@@ -51,7 +51,7 @@ pip install https://github.com/compphoto/IntrinsicCompositing/archive/main.zip
 ```
 This will allow you to import the repository as a Python package, and use our pipeline as part of your codebase.
 
-## Inference
+## Interface
 
 The best way to run our pipeline is by using our interactive interface. We provide some example backgrounds and foregrounds in `interface/examples`:
 
@@ -69,6 +69,54 @@ The first time you run the interface multiple pretrained checkpoints will be dow
 |scroll up/down | scale foreground region up or down |
 
 The interface has been tested on an RTX2060 with 8 gb of VRAM which should be able to handle inference at a 1024 pixel resolution. 
+
+## Inference
+
+If you want to run our pipeline on pre-made composite images, you can use the script in the `inference` folder. 
+This script will iterate through a set of composites and output our harmonized result:
+```
+$ cd inference
+$ python inference.py --help
+
+usage: inference.py [-h] --input_dir INPUT_DIR --output_dir OUTPUT_DIR [--inference_size INFERENCE_SIZE] [--intermediate]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --input_dir INPUT_DIR
+                        input directory to read input composites, bgs and masks
+  --output_dir OUTPUT_DIR
+                        output directory to store harmonized composites
+  --inference_size INFERENCE_SIZE
+                        size to perform inference (default 1024)
+  --intermediate        whether or not to save visualization of intermediate representations
+
+```
+Here is how you can run the script on a set of example composites stored in `inference/examples`:
+```
+$ python inference.py --input_dir examples/ --output_dir output/
+```
+If you want to test your own examples, the script uses the following input directory structure:
+```
+examples/
+├── cone_chair
+│   ├── bg.jpeg
+│   ├── composite.png
+│   └── mask.png
+├── lamp_candles
+│   ├── bg.jpeg
+│   ├── composite.png
+│   └── mask.png
+└── lamp_soap
+    ├── bg.jpeg
+    ├── composite.png
+    └── mask.png
+```
+Each directory contains a composite image, a corresponding mask for the composited region, and the background image without the composited object. 
+Note the background image is only used to compute the lighting direction, so it doesn't need to be exactly aligned with the composite image.
+In fact, it can be any image and the script will use it to estimate the illumination parameters used as part of our pipeline.
+
+The script expects the images to have the extensions shown above, and for the bg and composite to be three channels while the mask is one channel.
+The script can be easily adjusted in order to fit whatever data format you're using.
 
 ## Citation
 
