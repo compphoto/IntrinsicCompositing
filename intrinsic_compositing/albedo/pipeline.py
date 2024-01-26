@@ -135,8 +135,6 @@ def prep_input(rgb_img, mask_img, shading_img):
 
 
 def load_albedo_harmonizer():
-    
-    # cur_path = pathlib.Path(__file__).parent.resolve()
 
     args = Namespace()
     args.nops = 4
@@ -153,13 +151,13 @@ def load_albedo_harmonizer():
     args.batch_size = 1
 
     args.checkpoint_load_path = f'{CACHE_PATH}/albedo_harmonization/albedo_paper_weights.pth'
-    # args.checkpoint_load_path = f'{cur_path}/checkpoints/168000_net_Parameters.pth'
-    
+
     if not os.path.exists(args.checkpoint_load_path):
         os.makedirs(f'{CACHE_PATH}/albedo_harmonization', exist_ok=True)
         os.system(f'wget {PAPER_WEIGHTS_URL} -P {CACHE_PATH}/albedo_harmonization')
 
     trainer = EditingNetworkTrainer(args)
+
     return trainer
 
 def harmonize_albedo(img, shd, msk, trainer):
