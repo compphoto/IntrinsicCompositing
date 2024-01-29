@@ -89,6 +89,7 @@ optional arguments:
   --inference_size INFERENCE_SIZE
                         size to perform inference (default 1024)
   --intermediate        whether or not to save visualization of intermediate representations
+  --reproduce_paper     whether or not to use code and weights from the original paper implementation
 
 ```
 Here is how you can run the script on a set of example composites stored in `inference/examples`:
@@ -117,6 +118,14 @@ In fact, it can be any image and the script will use it to estimate the illumina
 
 The script expects the images to have the extensions shown above, and for the bg and composite to be three channels while the mask is one channel.
 The script can be easily adjusted in order to fit whatever data format you're using.
+
+## Note on Reproducibility
+
+The original albedo harmonization training and testing code assumed that the shading images were stored as 16-bit values, and normalized them to [0-1] accordingly. But when generating results I was using 8-bit shading images. This meant that the albedo being fed to the network was incorrect (due to the low-contrast shading values). When I prepared the code for release, I fixed this bug without thinking about it meaning the GitHub code does not have this issue. I believe the GitHub code is a more accurate implementation since the albedo harmonization network is receiving the correct albedo as input. In order to maintain reproducibility, I've added a flag to the inference and interface scripts called `--reproduce_paper` that will use the logic and weights from the original implementation. Without this flag, the code will run correctly and use better weights for the reshading network. Here are the results you should see for each setting of this flag:
+
+| with   `--reproduce_paper` | without `--reproduce_paper` |
+| ------------- | ------------- |
+| ![cone_chair](https://github.com/compphoto/IntrinsicCompositing/assets/3434597/b23c22dc-75c2-4e46-ba1f-54d7a137cacc) | ![cone_chair](https://github.com/compphoto/IntrinsicCompositing/assets/3434597/15ab7c12-527e-4d38-83d7-5cdaa4e67da3)  |
 
 ## Citation
 
