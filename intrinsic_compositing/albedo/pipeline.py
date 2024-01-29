@@ -66,7 +66,7 @@ def match_scalar(source, target, mask=None, min_percentile=0, max_percentile=100
     source_scaled = source * scalar
     return source_scaled, scalar
 
-def prep_input(rgb_img, mask_img, shading_img):
+def prep_input(rgb_img, mask_img, shading_img, reproduce_paper=False):
     # this function takes the srgb image (rgb_img) the mask
     # and the shading as numpy arrays between [0-1]
 
@@ -99,9 +99,13 @@ def prep_input(rgb_img, mask_img, shading_img):
     full_msk = torch.from_numpy(full_msk).unsqueeze(0)
     
     srgb = rgb_transform(np_to_pil(rgb_img))
-    rgb_mask = np.concatenate([mask_img] * 3, -1)
+    rgb_mask = np.stack([mask_img_np] * 3, -1)
     mask = mask_transform(np_to_pil(rgb_mask))
-    invshading = shading_transform(np_to_pil(shading_img)) # / (2**16-1)
+
+    if reproduce_paper:
+        invshading = shading_transform(np_to_pil(shading_img))  / (2**16-1)
+    else:
+        invshading = shading_transform(np_to_pil(shading_img))
 
     shading = ((1.0 / invshading) - 1.0)
 
@@ -160,12 +164,12 @@ def load_albedo_harmonizer():
 
     return trainer
 
-def harmonize_albedo(img, shd, msk, trainer):
+def harmonize_albedo(img, shd, msk, trainer, reproduce_paper=False):
     
     trainer.setEval()
 
-    data = prep_input(img, shd, msk)
-
+    data = prep_input(img, shd, msk, reproduce_paper=reproduce_paper)
+    
     trainer.setinput_HR(data)
 
     with torch.no_grad():

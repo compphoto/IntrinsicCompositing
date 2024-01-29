@@ -113,6 +113,7 @@ parser.add_argument('--input_dir', type=str, required=True, help='input director
 parser.add_argument('--output_dir', type=str, required=True, help='output directory to store harmonized composites')
 parser.add_argument('--inference_size', type=int, default=1024, help='size to perform inference (default 1024)')
 parser.add_argument('--intermediate', action='store_true', help='whether or not to save visualization of intermediate representations')
+parser.add_argument('--reproduce_paper', action='store_true', help='whether or not to use code and weights from the original paper implementation')
 
 args = parser.parse_args()
 
@@ -129,7 +130,10 @@ print('loading albedo model')
 alb_model = load_albedo_harmonizer()
 
 print('loading reshading model')
-shd_model = load_reshading_model('further_trained')
+if args.reproduce_paper:
+    shd_model = load_reshading_model('paper_weights')
+else:
+    shd_model = load_reshading_model('further_trained')
 
 
 examples = glob(f'{args.input_dir}/*')
@@ -208,7 +212,7 @@ for i, example_dir in enumerate(examples):
     # inv_shd = rescale(inv_shd, scale, r32=True)
 
     # compute the harmonized albedo, and the subsequent color harmonized image
-    alb_harm = harmonize_albedo(img, msk, inv_shd, alb_model) ** 2.2
+    alb_harm = harmonize_albedo(img, msk, inv_shd, alb_model, reproduce_paper=args.reproduce_paper) ** 2.2
     harm_img = alb_harm * uninvert(inv_shd)[:, :, None]
 
     # run the reshading model using the various composited components,
@@ -228,6 +232,7 @@ for i, example_dir in enumerate(examples):
         tile_imgs([
             img, 
             msk, 
+            view(alb_harm),
             1-inv_shd, 
             depth, 
             comp_nrm, 

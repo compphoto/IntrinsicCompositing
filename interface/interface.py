@@ -180,7 +180,10 @@ class App(tk.Tk):
         self.alb_model = load_albedo_harmonizer()
 
         print('loading reshading model')
-        self.shd_model = load_reshading_model('paper_weights')
+        if self.args.reproduce_paper:
+            self.shd_model = load_reshading_model('paper_weights')
+        else:
+            self.shd_model = load_reshading_model('further_trained')
         
         self.init_scene()
 
@@ -549,7 +552,8 @@ class App(tk.Tk):
                 self.comp_img, 
                 self.comp_msk, 
                 self.comp_shd, 
-                self.alb_model
+                self.alb_model,
+                reproduce_paper=self.args.reproduce_paper
             ) ** 2.2
             
             self.orig_alb = (self.comp_img ** 2.2) / uninvert(self.comp_shd)
@@ -663,6 +667,7 @@ if __name__ == "__main__":
     parser.add_argument('--bg', type=str, required=True)
     parser.add_argument('--fg', type=str, required=True)
     parser.add_argument('--mask', type=str, default=None)
+    parser.add_argument('--reproduce_paper', action='store_true', help='whether or not use the code and weights of the original paper implementation')
 
     args = parser.parse_args()
     
