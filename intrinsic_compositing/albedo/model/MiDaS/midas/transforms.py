@@ -36,7 +36,7 @@ def apply_min_size(sample, size, image_interpolation_method=cv2.INTER_AREA):
         sample["disparity"], tuple(shape[::-1]), interpolation=cv2.INTER_NEAREST
     )
     sample["mask"] = cv2.resize(
-        sample["mask"].astype(np.float32),
+        sample["mask"].astype(np.single),
         tuple(shape[::-1]),
         interpolation=cv2.INTER_NEAREST,
     )
@@ -185,7 +185,7 @@ class Resize(object):
                 )
 
             sample["mask"] = cv2.resize(
-                sample["mask"].astype(np.float32),
+                sample["mask"].astype(np.single),
                 (width, height),
                 interpolation=cv2.INTER_NEAREST,
             )
@@ -217,18 +217,18 @@ class PrepareForNet(object):
 
     def __call__(self, sample):
         image = np.transpose(sample["image"], (2, 0, 1))
-        sample["image"] = np.ascontiguousarray(image).astype(np.float32)
+        sample["image"] = np.ascontiguousarray(image).astype(np.single)
 
         if "mask" in sample:
-            sample["mask"] = sample["mask"].astype(np.float32)
+            sample["mask"] = sample["mask"].astype(np.single)
             sample["mask"] = np.ascontiguousarray(sample["mask"])
 
         if "disparity" in sample:
-            disparity = sample["disparity"].astype(np.float32)
+            disparity = sample["disparity"].astype(np.single)
             sample["disparity"] = np.ascontiguousarray(disparity)
 
         if "depth" in sample:
-            depth = sample["depth"].astype(np.float32)
+            depth = sample["depth"].astype(np.single)
             sample["depth"] = np.ascontiguousarray(depth)
 
         return sample

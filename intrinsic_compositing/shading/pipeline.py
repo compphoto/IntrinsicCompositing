@@ -215,7 +215,7 @@ def compute_reshading(orig, msk, inv_shd, depth, normals, alb, coeffs, model):
     inv_shd = resize(inv_shd, (round_32(h), round_32(w)))
     dpt = resize(depth, (round_32(h), round_32(w)))
     nrm = resize(normals, (round_32(h), round_32(w)))
-    msk = msk.astype(np.float32)
+    msk = msk.astype(np.single)
 
     hard_msk = (msk > 0.5)
 
