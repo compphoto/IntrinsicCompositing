@@ -49,7 +49,13 @@ Or perform the same action without cloning the code using:
 ```
 pip install https://github.com/compphoto/IntrinsicCompositing/archive/main.zip
 ```
-This will allow you to import the repository as a Python package, and use our pipeline as part of your codebase.
+This will allow you to import the repository as a Python package, and use our pipeline as part of your codebase. The pipeline has been tested with the following versions, but earlier versions should work as well:
+```
+python==3.10
+torch==2.5.1
+opencv-python==4.10
+numpy==1.26.4
+```
 
 ## Interface
 
