@@ -14,6 +14,6 @@ setuptools.setup(
         'chrislib @ git+https://github.com/CCareaga/chrislib@main',
         'omnidata_tools @ git+https://github.com/CCareaga/omnidata@main',
         'boosted_depth @ git+https://github.com/CCareaga/BoostingMonocularDepth@main',
-        'intrinsic @ git+https://github.com/compphoto/intrinsic@main'
+        'intrinsic @ git+https://github.com/compphoto/intrinsic@d9741e99b2997e679c4055e7e1f773498b791288'
     ]
 )
